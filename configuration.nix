@@ -87,6 +87,7 @@
 
   networking.firewall.enable = true;
 
+  nix.settings.trusted-users = [ "nils" ];
   nix.settings.experimental-features = [
     "nix-command"
     "flakes"
