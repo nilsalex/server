@@ -41,6 +41,8 @@
   networking.hostName = "server";
   networking.hostId = "1aebc26d";
 
+  networking.firewall.enable = true;
+
   time.timeZone = "Europe/Berlin";
 
   i18n.defaultLocale = "en_US.UTF-8";
@@ -85,7 +87,7 @@
     };
   };
 
-  networking.firewall.enable = true;
+  programs.mosh.enable = true;
 
   nix.settings.trusted-users = [ "nils" ];
   nix.settings.experimental-features = [
