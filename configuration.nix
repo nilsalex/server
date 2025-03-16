@@ -8,24 +8,27 @@
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
 
-  boot.initrd.kernelModules = [
-    "vfat"
-    "nls_cp437"
-    "nls_iso8859-1"
-    "usbhid"
-  ];
+  boot.initrd = {
+    kernelModules = [
+      "vfat"
+      "nls_cp437"
+      "nls_iso8859-1"
+      "usbhid"
+    ];
 
-  boot.initrd.luks = {
-    yubikeySupport = true;
-    devices = {
-      crypt = {
-        device = "/dev/disk/by-uuid/44617fa0-e314-409e-849f-3a501f9d8b36";
-        preLVM = true;
-        yubikey = {
-          slot = 2;
-          twoFactor = false;
-          storage = {
-            device = "/dev/disk/by-uuid/AAAA-2492";
+    luks = {
+      yubikeySupport = true;
+
+      devices = {
+        "nixos-enc" = {
+          device = "/dev/disk/by-uuid/905ee60f-3941-4c86-8bb0-5353c0239f65";
+          preLVM = true;
+          yubikey = {
+            slot = 2;
+            twoFactor = false;
+            storage = {
+              device = "/dev/disk/by-uuid/12CE-A600";
+            };
           };
         };
       };
@@ -39,9 +42,10 @@
   boot.zfs.extraPools = [ "tank" ];
 
   networking.hostName = "server";
-  networking.hostId = "1aebc26d";
+  networking.hostId = "7c08a933";
 
   networking.firewall.enable = true;
+  networking.firewall.allowedTCPPorts = [ 8000 ];
 
   time.timeZone = "Europe/Berlin";
 
@@ -52,11 +56,20 @@
   #   useXkbConfig = true; # use xkb.options in tty.
   # };
 
+  users.groups = {
+    jn = {
+      gid = 1002;
+    };
+  };
+
   users.users = {
     nils = {
       uid = 1000;
       isNormalUser = true;
-      extraGroups = [ "wheel" ];
+      extraGroups = [
+        "jn"
+        "wheel"
+      ];
       shell = pkgs.bash;
       home = "/home/nils";
       openssh.authorizedKeys.keys = [
@@ -67,6 +80,7 @@
     jenny = {
       uid = 1001;
       isNormalUser = true;
+      extraGroups = [ "jn" ];
       home = "/home/jenny";
     };
   };
@@ -84,6 +98,91 @@
       KbdInteractiveAuthentication = false;
       PermitRootLogin = "no";
       AllowUsers = [ "nils" ];
+    };
+  };
+
+  services.samba = {
+    enable = true;
+    openFirewall = true;
+    settings = {
+      global = {
+        workgroup = "WORKGROUP";
+        "server role" = "standalone server";
+        "security" = "user";
+      };
+      jenny = {
+        "comment" = "Jenny";
+        "path" = "/tank/enc/home/jenny";
+        "valid users" = "jenny";
+        "create mask" = "0660";
+        "directory mask" = "0770";
+        "guest ok" = "no";
+        "browseable" = "yes";
+        "read only" = "no";
+      };
+      nils = {
+        "comment" = "Nils";
+        "path" = "/tank/enc/home/nils";
+        "valid users" = "nils";
+        "create mask" = "0660";
+        "directory mask" = "0770";
+        "guest ok" = "no";
+        "browseable" = "yes";
+        "read only" = "no";
+      };
+      paperless = {
+        "comment" = "paperless";
+        "path" = "/tank/enc/paperless/consume";
+        "valid users" = "@jn";
+        "force group" = "paperless";
+        "create mask" = "0660";
+        "directory mask" = "0770";
+        "guest ok" = "no";
+        "browseable" = "yes";
+        "read only" = "no";
+      };
+      photos = {
+        "comment" = "Photos";
+        "path" = "/tank/enc/photos";
+        "valid users" = "@jn";
+        "force group" = "jn";
+        "create mask" = "0660";
+        "directory mask" = "0770";
+        "guest ok" = "no";
+        "browseable" = "yes";
+        "read only" = "no";
+      };
+      media = {
+        "comment" = "Media";
+        "path" = "/tank/enc/media";
+        "valid users" = "@jn";
+        "force group" = "jn";
+        "create mask" = "0660";
+        "directory mask" = "0770";
+        "guest ok" = "no";
+        "browseable" = "yes";
+        "read only" = "no";
+      };
+    };
+  };
+
+  services.samba-wsdd = {
+    enable = true;
+    openFirewall = true;
+  };
+
+  services.paperless = {
+    enable = true;
+    address = "0.0.0.0";
+    port = 8000;
+    dataDir = "/tank/enc/paperless";
+    consumptionDirIsPublic = true;
+    settings = {
+      PAPERLESS_CONSUMER_IGNORE_PATTERN = [
+        ".DS_STORE/*"
+        "desktop.ini"
+      ];
+      PAPERLESS_OCR_LANGUAGE = "deu+eng";
     };
   };
 
