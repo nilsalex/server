@@ -45,7 +45,7 @@
   networking.hostId = "7c08a933";
 
   networking.firewall.enable = true;
-  networking.firewall.allowedTCPPorts = [ 8000 ];
+  networking.firewall.allowedTCPPorts = [ 80 ];
 
   time.timeZone = "Europe/Berlin";
 
@@ -173,16 +173,28 @@
 
   services.paperless = {
     enable = true;
-    address = "0.0.0.0";
-    port = 8000;
     dataDir = "/tank/enc/paperless";
     consumptionDirIsPublic = true;
     settings = {
+      PAPERLESS_URL = "http://server";
       PAPERLESS_CONSUMER_IGNORE_PATTERN = [
         ".DS_STORE/*"
         "desktop.ini"
       ];
       PAPERLESS_OCR_LANGUAGE = "deu+eng";
+    };
+  };
+
+  services.nginx = {
+    enable = true;
+    virtualHosts = {
+      "server" = {
+        locations = {
+          "/" = {
+            proxyPass = "http://127.0.0.1:28981/";
+          };
+        };
+      };
     };
   };
 
