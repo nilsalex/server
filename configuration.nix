@@ -45,7 +45,10 @@
   networking.hostId = "7c08a933";
 
   networking.firewall.enable = true;
-  networking.firewall.allowedTCPPorts = [ 80 ];
+  networking.firewall.allowedTCPPorts = [
+    80
+    443
+  ];
 
   time.timeZone = "Europe/Berlin";
 
@@ -176,7 +179,7 @@
     dataDir = "/tank/enc/paperless";
     consumptionDirIsPublic = true;
     settings = {
-      PAPERLESS_URL = "http://server";
+      PAPERLESS_URL = "https://doc.ernj.me";
       PAPERLESS_CONSUMER_IGNORE_PATTERN = [
         ".DS_STORE/*"
         "desktop.ini"
@@ -185,10 +188,21 @@
     };
   };
 
+  security.acme = {
+    acceptTerms = true;
+    defaults.email = "nils@famalex.de";
+    certs."doc.ernj.me" = {
+      dnsProvider = "route53";
+      group = "nginx";
+    };
+  };
+
   services.nginx = {
     enable = true;
     virtualHosts = {
-      "server" = {
+      "doc.ernj.me" = {
+        forceSSL = true;
+        useACMEHost = "doc.ernj.me";
         locations = {
           "/" = {
             proxyPass = "http://127.0.0.1:28981/";
