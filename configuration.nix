@@ -186,6 +186,7 @@
       ];
       PAPERLESS_OCR_LANGUAGE = "deu+eng";
     };
+    exporter.enable = true;
   };
 
   security.acme = {
@@ -211,6 +212,8 @@
       };
     };
   };
+
+  services.zfs.autoScrub.enable = true;
 
   programs.mosh.enable = true;
 
