@@ -5,7 +5,13 @@
     ./hardware-configuration.nix
   ];
 
-  boot.loader.systemd-boot.enable = true;
+  boot.loader.systemd-boot = {
+    enable = true;
+    memtest86 = {
+      enable = true;
+    };
+  };
+
   boot.loader.efi.canTouchEfiVariables = true;
 
   boot.initrd = {
@@ -89,6 +95,8 @@
   };
 
   environment.systemPackages = with pkgs; [
+    restic
+    screen
     vim
   ];
 
