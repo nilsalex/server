@@ -52,7 +52,6 @@
 
   networking.firewall.enable = true;
   networking.firewall.allowedTCPPorts = [
-    80
     443
   ];
 
@@ -99,6 +98,8 @@
     screen
     vim
   ];
+
+  services.tailscale.enable = true;
 
   services.openssh = {
     enable = true;
@@ -187,7 +188,7 @@
     dataDir = "/tank/enc/paperless";
     consumptionDirIsPublic = true;
     settings = {
-      PAPERLESS_URL = "https://doc.ernj.me";
+      PAPERLESS_URL = "https://server.nessie-bleak.ts.net";
       PAPERLESS_CONSUMER_IGNORE_PATTERN = [
         ".DS_STORE/*"
         "desktop.ini"
@@ -197,24 +198,27 @@
     exporter.enable = true;
   };
 
-  security.acme = {
-    acceptTerms = true;
-    defaults.email = "nils@famalex.de";
-    certs."doc.ernj.me" = {
-      dnsProvider = "route53";
-      group = "nginx";
-    };
-  };
+  # security.acme = {
+  #   acceptTerms = true;
+  #   defaults.email = "nils@famalex.de";
+  #   certs."doc.ernj.me" = {
+  #     dnsProvider = "route53";
+  #     group = "nginx";
+  #   };
+  # };
 
   services.nginx = {
     enable = true;
     virtualHosts = {
       "doc.ernj.me" = {
         forceSSL = true;
-        useACMEHost = "doc.ernj.me";
+        # useACMEHost = "doc.ernj.me";
+        sslCertificate = "/var/tls/server.nessie-bleak.ts.net.crt";
+        sslCertificateKey = "/var/tls/server.nessie-bleak.ts.net.key";
         locations = {
           "/" = {
             proxyPass = "http://127.0.0.1:28981/";
+            proxyWebsockets = true;
           };
         };
       };
