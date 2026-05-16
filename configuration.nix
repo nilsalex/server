@@ -15,6 +15,8 @@
   boot.loader.efi.canTouchEfiVariables = true;
 
   boot.initrd = {
+    systemd.enable = true;
+
     kernelModules = [
       "vfat"
       "nls_cp437"
@@ -23,19 +25,12 @@
     ];
 
     luks = {
-      yubikeySupport = true;
-
+      fido2Support = false;
       devices = {
         "nixos-enc" = {
           device = "/dev/disk/by-uuid/905ee60f-3941-4c86-8bb0-5353c0239f65";
           preLVM = true;
-          yubikey = {
-            slot = 2;
-            twoFactor = false;
-            storage = {
-              device = "/dev/disk/by-uuid/12CE-A600";
-            };
-          };
+          crypttabExtraOpts = [ "fido2-device=auto" ];
         };
       };
     };
@@ -45,7 +40,10 @@
     zfs = true;
   };
 
-  boot.zfs.extraPools = [ "tank" ];
+  boot.zfs = {
+    forceImportRoot = false;
+    extraPools = [ "tank" ];
+  };
 
   networking.hostName = "server";
   networking.hostId = "7c08a933";
